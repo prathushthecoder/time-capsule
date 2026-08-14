@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Time Capsule</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="app">
+
+        <header>
+            <h1>Time Capsule</h1>
+            <p>Write something today. Open it in the future.</p>
+        </header>
+
+        <section class="create-box">
+
+            <h2>Create a Capsule</h2>
+
+            <input
+                type="text"
+                id="title"
+                placeholder="Capsule title"
+            >
+
+            <textarea
+                id="message"
+                placeholder="Write something for your future self..."
+            ></textarea>
+
+            <label for="unlockDate">
+                Unlock date
+            </label>
+
+            <input
+                type="date"
+                id="unlockDate"
+            >
+
+            <button onclick="createCapsule()">
+                Seal Capsule
+            </button>
+
+        </section>
+
+        <section>
+
+            <h2>My Capsules</h2>
+
+            <div id="capsules"></div>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
