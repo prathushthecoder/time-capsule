@@ -3,60 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Time Capsule</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+    <div class="background"></div>
+
     <main class="app">
 
-        <header>
+        <header class="hero">
+            <div class="logo">⏳</div>
+
             <h1>Time Capsule</h1>
-            <p>Write something today. Open it in the future.</p>
+
+            <p>
+                Write something today.<br>
+                Open it in the future.
+            </p>
         </header>
 
         <section class="create-box">
 
-            <h2>Create a Capsule</h2>
+            <div class="section-heading">
+                <span>✦</span>
+                <h2>Create a Capsule</h2>
+            </div>
+
+            <label for="title">Title</label>
 
             <input
                 type="text"
                 id="title"
-                placeholder="Capsule title"
+                placeholder="Give your capsule a name..."
+                maxlength="60"
             >
+
+            <label for="message">Message</label>
 
             <textarea
                 id="message"
                 placeholder="Write something for your future self..."
+                maxlength="2000"
             ></textarea>
 
             <label for="unlockDate">
-                Unlock date
+                Unlock date & time
             </label>
 
             <input
-                type="date"
+                type="datetime-local"
                 id="unlockDate"
             >
 
-            <button onclick="createCapsule()">
+            <button
+                type="button"
+                class="seal-button"
+                id="sealButton"
+            >
+                <span>🔒</span>
                 Seal Capsule
             </button>
 
         </section>
 
-        <section>
+        <section class="capsules-section">
 
-            <h2>My Capsules</h2>
+            <div class="section-heading">
+                <span>📦</span>
+                <h2>My Capsules</h2>
+            </div>
 
             <div id="capsules"></div>
 
         </section>
 
     </main>
+
+    <div
+        class="modal hidden"
+        id="capsuleModal"
+    >
+
+        <div class="modal-content">
+
+            <button
+                class="close-button"
+                id="closeModal"
+                type="button"
+            >
+                ×
+            </button>
+
+            <div class="modal-icon">🔓</div>
+
+            <p class="modal-label">CAPSULE OPENED</p>
+
+            <h2 id="modalTitle"></h2>
+
+            <div
+                class="modal-message"
+                id="modalMessage"
+            ></div>
+
+            <p
+                class="modal-date"
+                id="modalDate"
+            ></p>
+
+        </div>
+
+    </div>
 
     <script src="script.js"></script>
 
