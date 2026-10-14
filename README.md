@@ -1,30 +1,19 @@
-# time-capsule
 ⏳ Time Capsule
-🎯 Purpose
 
-Time Capsule is a personal web app that lets users write messages, memories, goals, or thoughts and lock them until a chosen future date. It is designed to encourage future reflection and make looking back at your past thoughts more meaningful.
+Write a message to your future self and lock it until a date you choose. Until then, it just sits there with a countdown.
 
-💡 Motive
+I wanted something more personal than another notes app, something you have to wait for.
 
-The idea came from a simple question: “What if I could send a message to my future self?”
-Instead of creating another ordinary notes app, I wanted to build something personal that creates anticipation and has a real purpose.
+Features:
+Create capsules with a title, message, and unlock date/time
+Live countdown while locked, automatic unlock when time is up
+Popup and browser notification when a capsule is ready
+Delete capsules, works on mobile
 
-✨ Features
-📝 Create personal capsules
-🔒 Lock capsules until a specific date and time
-⏳ Live countdown timer
-🔓 Automatic unlocking
-🔔 Unlock notifications
-💾 Browser-based localStorage
-🗑️ Delete capsules
-🎨 Modern glassmorphism interface
-📱 Responsive design
-🛠️ Built With
+Everything is stored in localStorage, so clearing your browser data deletes your capsules.
 
-HTML • CSS • JavaScript • localStorage
+Built with:
+HTML, CSS, and JavaScript. No libraries or APIs. Just open index.html.
 
-No external APIs or additional software are required.
-
-🌱 Goal
-
-This project is also a learning experience for me, helping me improve my JavaScript, CSS, UI design, date/time handling, browser storage, and overall web-development skills while creating something genuinely useful and personal.
+What I learned:
+Date/time handling, localStorage, responsive CSS, and escaping user input.
