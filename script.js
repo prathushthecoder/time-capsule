@@ -1,49 +1,50 @@
-function getCapsules() {
-    return JSON.parse(localStorage.getItem("capsules")) || [];
+// Everything lives in localStorage under one key - no backend, so clearing
+// site data wipes the capsules. Fine for now.
+const STORAGE_KEY = "capsules";
+
+function loadCapsules() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 }
 
-function saveCapsules(capsules) {
-    localStorage.setItem("capsules", JSON.stringify(capsules));
+function storeCapsules(list) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
-function createCapsule() {
-    const titleInput = document.getElementById("title");
-    const messageInput = document.getElementById("message");
-    const dateInput = document.getElementById("unlockDate");
+function sealCapsule() {
+    const titleField = document.getElementById("title");
+    const messageField = document.getElementById("message");
+    const dateField = document.getElementById("unlockDate");
 
-    const title = titleInput.value.trim();
-    const message = messageInput.value.trim();
-    const unlockDate = dateInput.value;
+    const title = titleField.value.trim();
+    const message = messageField.value.trim();
+    const unlockDate = dateField.value;
 
     if (!title) {
-        showNotification("Please enter a title.");
-        titleInput.focus();
+        flashMessage("Please enter a title.");
+        titleField.focus();
         return;
     }
-
     if (!message) {
-        showNotification("Please write a message.");
-        messageInput.focus();
+        flashMessage("Please write a message.");
+        messageField.focus();
         return;
     }
-
     if (!unlockDate) {
-        showNotification("Please choose an unlock date.");
-        dateInput.focus();
+        flashMessage("Please choose an unlock date.");
+        dateField.focus();
         return;
     }
 
-    const selectedDate = new Date(unlockDate);
-    const now = new Date();
-
-    if (selectedDate <= now) {
-        showNotification("Choose a future date and time.");
-        dateInput.focus();
+    // datetime-local gives us a string with no timezone, so this is read as local time
+    const chosenTime = new Date(unlockDate);
+    if (chosenTime <= new Date()) {
+        flashMessage("Choose a future date and time.");
+        dateField.focus();
         return;
     }
 
-    const capsule = {
-        id: Date.now(),
+    const newCapsule = {
+        id: Date.now(),   // good enough as an id, nobody's making two in the same ms
         title: title,
         message: message,
         unlockDate: unlockDate,
@@ -51,29 +52,27 @@ function createCapsule() {
         notified: false
     };
 
-    const capsules = getCapsules();
+    const saved = loadCapsules();
+    saved.push(newCapsule);
+    storeCapsules(saved);
 
-    capsules.push(capsule);
+    // clear the form
+    titleField.value = "";
+    messageField.value = "";
+    dateField.value = "";
 
-    saveCapsules(capsules);
-
-    titleInput.value = "";
-    messageInput.value = "";
-    dateInput.value = "";
-
-    displayCapsules();
-
-    showNotification("Capsule sealed successfully! 🔒");
+    renderCapsules();
+    flashMessage("Capsule sealed successfully! 🔒");
 }
 
-function displayCapsules() {
-    const container = document.getElementById("capsules");
-    const capsules = getCapsules();
+function renderCapsules() {
+    const list = document.getElementById("capsules");
+    const saved = loadCapsules();
 
-    container.innerHTML = "";
+    list.innerHTML = "";
 
-    if (capsules.length === 0) {
-        container.innerHTML = `
+    if (saved.length === 0) {
+        list.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">📭</div>
                 <h3>No capsules yet</h3>
@@ -83,342 +82,195 @@ function displayCapsules() {
                 </p>
             </div>
         `;
-
         return;
     }
 
-    capsules.sort((a, b) => b.id - a.id);
+    // newest first
+    saved.sort((a, b) => b.id - a.id);
 
-    capsules.forEach(capsule => {
+    saved.forEach(capsule => {
         const card = document.createElement("div");
-
         card.className = "capsule";
 
-        const unlockDate = new Date(capsule.unlockDate);
-        const now = new Date();
+        const opensAt = new Date(capsule.unlockDate);
+        const isReady = new Date() >= opensAt;
 
-        if (now >= unlockDate) {
+        if (isReady) {
             card.innerHTML = `
                 <div class="capsule-header">
-                    <span class="status unlocked">
-                        🔓 Unlocked
-                    </span>
+                    <span class="status unlocked">🔓 Unlocked</span>
 
-                    <button
-                        class="delete-button"
-                        type="button"
-                        onclick="deleteCapsule(${capsule.id})"
-                    >
+                    <button class="delete-button" type="button"
+                        onclick="deleteCapsule(${capsule.id})">
                         🗑️
                     </button>
                 </div>
 
-                <h3>
-                    ${escapeHTML(capsule.title)}
-                </h3>
+                <h3>${escapeHTML(capsule.title)}</h3>
 
-                <p class="unlock-info">
-                    This capsule is ready to open.
-                </p>
+                <p class="unlock-info">This capsule is ready to open.</p>
 
-                <button
-                    class="open-button"
-                    type="button"
-                    onclick="openCapsule(${capsule.id})"
-                >
+                <button class="open-button" type="button"
+                    onclick="openCapsule(${capsule.id})">
                     Open Capsule
                 </button>
             `;
         } else {
             card.innerHTML = `
                 <div class="capsule-header">
-                    <span class="status locked">
-                        🔒 Locked
-                    </span>
+                    <span class="status locked">🔒 Locked</span>
 
-                    <button
-                        class="delete-button"
-                        type="button"
-                        onclick="deleteCapsule(${capsule.id})"
-                    >
+                    <button class="delete-button" type="button"
+                        onclick="deleteCapsule(${capsule.id})">
                         🗑️
                     </button>
                 </div>
 
-                <h3>
-                    ${escapeHTML(capsule.title)}
-                </h3>
+                <h3>${escapeHTML(capsule.title)}</h3>
 
-                <p class="unlock-info">
-                    Opens on ${formatDate(capsule.unlockDate)}
-                </p>
+                <p class="unlock-info">Opens on ${formatDate(capsule.unlockDate)}</p>
 
-                <div
-                    class="countdown"
-                    data-date="${capsule.unlockDate}"
-                >
+                <div class="countdown" data-date="${capsule.unlockDate}">
                     Calculating...
                 </div>
             `;
         }
 
-        container.appendChild(card);
+        list.appendChild(card);
     });
 
-    updateCountdowns();
+    // fill in the countdown text right away instead of waiting a second
+    tickCountdowns();
 }
 
 function openCapsule(id) {
-    const capsules = getCapsules();
+    const capsule = loadCapsules().find(c => c.id === id);
+    if (!capsule) return;
 
-    const capsule = capsules.find(
-        capsule => capsule.id === id
-    );
-
-    if (!capsule) {
+    // the button only shows up once unlocked, but a stale tab could still call this
+    if (new Date() < new Date(capsule.unlockDate)) {
+        flashMessage("This capsule is still locked! 🔒");
         return;
     }
 
-    const unlockDate = new Date(capsule.unlockDate);
-    const now = new Date();
-
-    if (now < unlockDate) {
-        showNotification("This capsule is still locked! 🔒");
-        return;
-    }
-
-    document.getElementById("modalTitle").textContent =
-        capsule.title;
-
-    document.getElementById("modalMessage").textContent =
-        capsule.message;
-
+    // textContent on purpose - the message is user input
+    document.getElementById("modalTitle").textContent = capsule.title;
+    document.getElementById("modalMessage").textContent = capsule.message;
     document.getElementById("modalDate").textContent =
         "Created " + formatDate(capsule.createdAt);
 
-    document
-        .getElementById("capsuleModal")
-        .classList.remove("hidden");
+    document.getElementById("capsuleModal").classList.remove("hidden");
 }
 
 function closeModal() {
-    document
-        .getElementById("capsuleModal")
-        .classList.add("hidden");
+    document.getElementById("capsuleModal").classList.add("hidden");
 }
 
 function deleteCapsule(id) {
-    const confirmed = confirm(
-        "Are you sure you want to delete this capsule?"
-    );
-
-    if (!confirmed) {
+    if (!confirm("Are you sure you want to delete this capsule?")) {
         return;
     }
 
-    let capsules = getCapsules();
+    const remaining = loadCapsules().filter(c => c.id !== id);
+    storeCapsules(remaining);
 
-    capsules = capsules.filter(
-        capsule => capsule.id !== id
-    );
-
-    saveCapsules(capsules);
-
-    displayCapsules();
-
-    showNotification("Capsule deleted.");
+    renderCapsules();
+    flashMessage("Capsule deleted.");
 }
 
-function updateCountdowns() {
-    const countdowns =
-        document.querySelectorAll(".countdown");
+function tickCountdowns() {
+    const timers = document.querySelectorAll(".countdown");
 
-    countdowns.forEach(element => {
-        const target =
-            new Date(element.dataset.date).getTime();
+    timers.forEach(timer => {
+        const msLeft = new Date(timer.dataset.date).getTime() - Date.now();
 
-        const now =
-            new Date().getTime();
-
-        const difference = target - now;
-
-        if (difference <= 0) {
-            element.textContent ="🔓 Unlocked";
+        if (msLeft <= 0) {
+            timer.textContent = "🔓 Unlocked";
             return;
         }
 
-        const days =
-            Math.floor(
-                difference /
-                (1000 * 60 * 60 * 24)
-            );
+        const days = Math.floor(msLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((msLeft / (1000 * 60 * 60)) % 24);
+        const mins = Math.floor((msLeft / (1000 * 60)) % 60);
+        const secs = Math.floor((msLeft / 1000) % 60);
 
-        const hours =
-            Math.floor(
-                (difference /
-                    (1000 * 60 * 60)) % 24
-            );
-
-        const minutes =
-            Math.floor(
-                (difference /
-                    (1000 * 60)) % 60
-            );
-
-        const seconds =
-            Math.floor(
-                (difference / 1000) % 60
-            );
-
-        element.textContent =
-            `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        timer.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
     });
 }
 
+// Runs every second. The `notified` flag stops us from popping up the same
+// alert over and over once a capsule has unlocked.
 function checkForUnlockedCapsules() {
-    const capsules = getCapules();
-    let changed = false;
+    const saved = loadCapsules();
+    let anyNewlyUnlocked = false;
 
-    capsules.forEach(capsule => {
-        const unlockDate = new Date(capsule.unlockDate);
-        const now = new Date();
+    saved.forEach(capsule => {
+        const ready = new Date() >= new Date(capsule.unlockDate);
 
-        if (
-            now >= unlockDate &&
-            capsule.notified !== true
-        ) {
-            showCapsuleNotification(capsule);
-
+        if (ready && capsule.notified !== true) {
+            announceUnlock(capsule);
             capsule.notified = true;
-            changed = true;
+            anyNewlyUnlocked = true;
         }
     });
 
-    if (changed) {
-        savedCapsules(capsules);
-        displayCapsules();
+    // only touch storage / re-render when something actually changed
+    if (anyNewlyUnlocked) {
+        storeCapsules(saved);
+        renderCapsules();
     }
 }
 
-function showCapsuleNotification(capsule) {
+function announceUnlock(capsule) {
+    // browser notification is a bonus, only if the user said yes earlier
+    if ("Notification" in window && Notification.permission === "granted") {
+        const readyNote = new Notification("⏳ Your Time Capsule is Ready!", {
+            body: `"${capsule.title}" is ready to open.`
+        });
 
-    if (
-        "Notification" in window &&
-        Notification.permission === "granted"
-    ) {
-        const notification = new Notification(
-            "⏳ Your Time Capsule is Ready!",
-            {
-                body:
-                    `"${capsule.title}" is ready to open.`
-            }
-        );
-
-        notification.onclick = function() {
+        readyNote.onclick = function () {
             window.focus();
             openCapsule(capsule.id);
-            notification.close();
+            readyNote.close();
         };
     }
 
+    // in-page popup always shows, even if notifications are blocked
     showUnlockPopup(capsule);
 }
 
 function formatDate(dateString) {
-    const date = new Date(dateString);
-
-    return date.toLocaleString([], {
+    return new Date(dateString).toLocaleString([], {
         dateStyle: "medium",
         timeStyle: "short"
     });
 }
 
-function showNotification(message) {
-    const notification =
-        document.createElement("div");
+// little toast in the corner
+function flashMessage(text) {
+    const toast = document.createElement("div");
+    toast.className = "notification";
+    toast.textContent = text;
+    document.body.appendChild(toast);
 
-    notification.className =
-        "notification";
-
-    notification.textContent =
-        message;
-
-    document.body.appendChild(notification);
+    // tiny delay so the CSS transition actually fires
+    setTimeout(() => toast.classList.add("show"), 10);
 
     setTimeout(() => {
-        notification.classList.add("show");
-    }, 10);
-
-    setTimeout(() => {
-        notification.classList.remove("show");
-
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
     }, 2500);
 }
 
+// titles get dropped into innerHTML above, so they have to be escaped
 function escapeHTML(text) {
-    const div =
-        document.createElement("div");
-
-    div.textContent = text;
-
-    return div.innerHTML;
+    const temp = document.createElement("div");
+    temp.textContent = text;
+    return temp.innerHTML;
 }
 
-document
-    .getElementById("sealButton")
-    .addEventListener(
-        "click",
-        createCapsule
-    );
-
-document
-    .getElementById("closeModal")
-    .addEventListener(
-        "click",
-        closeModal
-    );
-
-document
-    .getElementById("capsuleModal")
-    .addEventListener(
-        "click",
-        function(event) {
-            if (event.target === this) {
-                closeModal();
-            }
-        }
-    );
-
-document.addEventListener(
-    "keydown",
-    function(event) {
-        if (event.key === "Escape") {
-            closeModal();
-        }
-    }
-);
-
-requestNotificationPermission();
-
-displayCapsules();
-
-setInterval(
-    updateCountdowns,
-    1000
-);
-
-setInterval(
-    checkForUnlockedCapsules,
-    1000
-);
-
-function showUnlockPopup (capsule) {
-
+function showUnlockPopup(capsule) {
     const popup = document.createElement("div");
-
     popup.className = "unlock-popup";
 
     popup.innerHTML = `
@@ -429,36 +281,43 @@ function showUnlockPopup (capsule) {
             <p>${escapeHTML(capsule.title)}</p>
         </div>
 
-        <button
-            type="button"
-            onclick="openCapsule(${capsule.id}); this.parentElement.remove();"
-        >
+        <button type="button"
+            onclick="openCapsule(${capsule.id}); this.parentElement.remove();">
             Open
         </button>
 
-        <button
-            type="button"
-            class="popup-close"
-            onclick="this.parentElement.remove();"
-        >
+        <button type="button" class="popup-close"
+            onclick="this.parentElement.remove();">
             ×
         </button>
     `;
 
     document.body.appendChild(popup);
-
-    setTimeout(() => {
-        popup.classList.add("show");
-    }, 10);
+    setTimeout(() => popup.classList.add("show"), 10);
 }
 
-function requestNotificationPermission() {
-
-    if (
-        "Notification" in window &&
-        Notification.permission === "default"
-    ) {
+function askForNotificationPermission() {
+    if ("Notification" in window && Notification.permission === "default") {
         Notification.requestPermission();
     }
 }
 
+// ---- wiring ----
+
+document.getElementById("sealButton").addEventListener("click", sealCapsule);
+document.getElementById("closeModal").addEventListener("click", closeModal);
+
+// clicking the dark backdrop (but not the card itself) closes the modal
+document.getElementById("capsuleModal").addEventListener("click", function (e) {
+    if (e.target === this) closeModal();
+});
+
+document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeModal();
+});
+
+askForNotificationPermission();
+renderCapsules();
+
+setInterval(tickCountdowns, 1000);
+setInterval(checkForUnlockedCapsules, 1000);
