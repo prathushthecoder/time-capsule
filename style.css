@@ -1,24 +1,21 @@
+/* Dark navy theme with a warm gold accent. Colors are pulled into variables
+   so I can retune the whole look from one spot. */
 :root {
     color-scheme: dark;
-    --page: #101722;
-    --page-soft: #151f2d;
-    --panel: #1a2635;
-    --panel-raised: #202e40;
-    --line: #344255;
+    --bg: #101722;
+    --card: #1a2635;
+    --border: #344255;
     --text: #f3f0e8;
     --muted: #a9b3c1;
-    --accent: #e8b86d;
-    --accent-hover: #f2c983;
-    --purple: #a9a4ed;
+    --gold: #e8b86d;
+    --gold-hover: #f2c983;
     --green: #9bd6b0;
     --red: #efaaaa;
     --radius: 16px;
     --shadow: 0 16px 38px rgba(0, 0, 0, 0.22);
 }
 
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html {
     min-width: 320px;
@@ -31,23 +28,18 @@ body {
     overflow-x: hidden;
     background:
         radial-gradient(ellipse at 50% 0%, #1b2a3c 0, transparent 48%),
-        var(--page);
+        var(--bg);
     color: var(--text);
     font-family: Inter, "Segoe UI", Arial, sans-serif;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
 }
 
-button,
-input,
-textarea {
-    font: inherit;
-}
+button, input, textarea { font: inherit; }
 
-button {
-    -webkit-tap-highlight-color: transparent;
-}
+button { -webkit-tap-highlight-color: transparent; }
 
+/* faint colored glows behind everything, just so the bg isn't flat */
 .background {
     position: fixed;
     inset: 0;
@@ -63,6 +55,8 @@ button {
     margin: 0 auto;
     padding: 54px 0 76px;
 }
+
+/* ---------- header ---------- */
 
 .hero {
     margin-bottom: 36px;
@@ -98,10 +92,12 @@ button {
     line-height: 1.75;
 }
 
+/* ---------- shared card look ---------- */
+
 .create-box,
 .capsule,
 .empty-state {
-    border: 1px solid var(--line);
+    border: 1px solid var(--border);
     background: rgba(26, 38, 53, 0.94);
     box-shadow: var(--shadow);
 }
@@ -128,7 +124,7 @@ button {
     border: 1px solid #4b4b51;
     border-radius: 10px;
     background: #283344;
-    color: var(--accent);
+    color: var(--gold);
     font-size: 17px;
 }
 
@@ -139,6 +135,8 @@ button {
     letter-spacing: -0.25px;
 }
 
+/* ---------- form ---------- */
+
 label {
     display: block;
     margin: 17px 0 7px;
@@ -147,8 +145,7 @@ label {
     font-weight: 600;
 }
 
-input,
-textarea {
+input, textarea {
     display: block;
     width: 100%;
     border: 1px solid #3a485b;
@@ -161,9 +158,7 @@ textarea {
     transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
 }
 
-input {
-    min-height: 48px;
-}
+input { min-height: 48px; }
 
 textarea {
     min-height: 148px;
@@ -174,19 +169,18 @@ textarea {
 input::placeholder,
 textarea::placeholder {
     color: #8490a1;
-    opacity: 1;
+    opacity: 1;   /* firefox dims placeholders by default */
 }
 
 input:focus,
 textarea:focus {
-    border-color: var(--accent);
+    border-color: var(--gold);
     background: #142131;
     box-shadow: 0 0 0 3px rgba(232, 184, 109, 0.12);
 }
 
-input[type="datetime-local"] {
-    color-scheme: dark;
-}
+/* makes the native date picker popup dark too */
+input[type="datetime-local"] { color-scheme: dark; }
 
 .seal-button {
     display: flex;
@@ -199,7 +193,7 @@ input[type="datetime-local"] {
     padding: 13px 18px;
     border: 1px solid #f0c982;
     border-radius: 10px;
-    background: var(--accent);
+    background: var(--gold);
     color: #20202a;
     font-size: 0.96rem;
     font-weight: 750;
@@ -207,13 +201,10 @@ input[type="datetime-local"] {
     transition: background-color 150ms ease, transform 150ms ease;
 }
 
-.seal-button:hover {
-    background: var(--accent-hover);
-}
+.seal-button:hover { background: var(--gold-hover); }
+.seal-button:active { transform: translateY(1px); }
 
-.seal-button:active {
-    transform: translateY(1px);
-}
+/* ---------- capsule cards ---------- */
 
 #capsules {
     display: grid;
@@ -265,7 +256,7 @@ input[type="datetime-local"] {
 
 .capsule h3 {
     margin: 0 0 7px;
-    overflow-wrap: anywhere;
+    overflow-wrap: anywhere;   /* long titles with no spaces would overflow otherwise */
     font-family: Georgia, "Times New Roman", serif;
     font-size: 1.3rem;
     font-weight: 600;
@@ -282,7 +273,7 @@ input[type="datetime-local"] {
     margin-top: 17px;
     color: #d8c8ff;
     font-size: 1rem;
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: tabular-nums;   /* keeps digits from jittering as they tick */
     font-weight: 700;
     letter-spacing: 0.15px;
 }
@@ -350,7 +341,8 @@ input[type="datetime-local"] {
     line-height: 1.7;
 }
 
-/* Capsule reading dialog */
+/* ---------- reading modal ---------- */
+
 .modal {
     position: fixed;
     inset: 0;
@@ -364,9 +356,7 @@ input[type="datetime-local"] {
     animation: fade-in 180ms ease-out;
 }
 
-.modal.hidden {
-    display: none;
-}
+.modal.hidden { display: none; }
 
 .modal-content {
     position: relative;
@@ -389,7 +379,7 @@ input[type="datetime-local"] {
 
 .modal-label {
     margin: 0 0 10px;
-    color: var(--accent);
+    color: var(--gold);
     font-size: 0.72rem;
     font-weight: 800;
     letter-spacing: 1.8px;
@@ -410,7 +400,7 @@ input[type="datetime-local"] {
     background: #131e2b;
     color: #e3e8ef;
     line-height: 1.8;
-    white-space: pre-wrap;
+    white-space: pre-wrap;   /* so line breaks in the saved message show up */
     overflow-wrap: anywhere;
     text-align: left;
 }
@@ -438,11 +428,10 @@ input[type="datetime-local"] {
     cursor: pointer;
 }
 
-.close-button:hover {
-    background: #314158;
-}
+.close-button:hover { background: #314158; }
 
-/* Short in-page messages */
+/* ---------- toasts & unlock popup ---------- */
+
 .notification {
     position: fixed;
     z-index: 200;
@@ -465,7 +454,7 @@ input[type="datetime-local"] {
     transform: translateY(0);
 }
 
-/* Unlock reminder created by script.js */
+/* built in script.js when a capsule unlocks while the page is open */
 .unlock-popup {
     position: fixed;
     right: 22px;
@@ -518,7 +507,7 @@ input[type="datetime-local"] {
     padding: 8px 11px;
     border: 1px solid #d7ad68;
     border-radius: 8px;
-    background: var(--accent);
+    background: var(--gold);
     color: #20202a;
     font-size: 0.82rem;
     font-weight: 750;
@@ -533,9 +522,7 @@ input[type="datetime-local"] {
     font-size: 1.1rem;
 }
 
-.unlock-popup button:hover {
-    filter: brightness(1.06);
-}
+.unlock-popup button:hover { filter: brightness(1.06); }
 
 button:focus-visible {
     outline: 3px solid rgba(232, 184, 109, 0.7);
@@ -544,7 +531,7 @@ button:focus-visible {
 
 @keyframes fade-in {
     from { opacity: 0; }
-    to { opacity: 1; }
+    to   { opacity: 1; }
 }
 
 @keyframes rise-in {
@@ -558,15 +545,15 @@ button:focus-visible {
     }
 }
 
+/* ---------- small screens ---------- */
+
 @media (max-width: 600px) {
     .app {
         width: min(100% - 28px, 760px);
         padding: 34px 0 48px;
     }
 
-    .hero {
-        margin-bottom: 28px;
-    }
+    .hero { margin-bottom: 28px; }
 
     .logo {
         width: 55px;
@@ -590,26 +577,18 @@ button:focus-visible {
         padding: 21px 18px;
     }
 
-    .section-heading {
-        margin-bottom: 18px;
-    }
+    .section-heading { margin-bottom: 18px; }
 
-    .capsule {
-        padding: 18px;
-    }
+    .capsule { padding: 18px; }
 
-    .modal {
-        padding: 12px;
-    }
+    .modal { padding: 12px; }
 
     .modal-content {
         padding: 35px 20px 22px;
         border-radius: 15px;
     }
 
-    .modal-message {
-        padding: 16px;
-    }
+    .modal-message { padding: 16px; }
 
     .unlock-popup {
         right: 12px;
@@ -619,6 +598,7 @@ button:focus-visible {
     }
 }
 
+/* respect the OS "reduce motion" setting */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
